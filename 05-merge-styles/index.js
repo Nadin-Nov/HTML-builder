@@ -16,10 +16,18 @@ async function mergeStyles() {
 
   try {
     const files = await fs.readdir(stylesDir);
-    const cssFiles = files.filter((file) => path.extname(file) === '.css');
+    const cssFiles = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(stylesDir, file);
+        const stat = await fs.stat(filePath);
+        return stat.isFile() && path.extname(file) === '.css' ? file : null;
+      }),
+    );
+
+    const validCssFiles = cssFiles.filter((file) => file !== null);
 
     const styles = await Promise.all(
-      cssFiles.map(async (file) => {
+      validCssFiles.map(async (file) => {
         const filePath = path.join(stylesDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         return content;
