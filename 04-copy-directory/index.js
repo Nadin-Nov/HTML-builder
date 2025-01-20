@@ -7,10 +7,20 @@ async function copyDir() {
 
   await fs.mkdir(targetDir, { recursive: true });
 
-  const files = await fs.readdir(sourceDir);
+  const sourceFiles = await fs.readdir(sourceDir);
+  const targetFiles = await fs.readdir(targetDir);
 
   await Promise.all(
-    files.map(async (file) => {
+    targetFiles.map(async (file) => {
+      if (!sourceFiles.includes(file)) {
+        const targetFile = path.join(targetDir, file);
+        await fs.unlink(targetFile);
+      }
+    }),
+  );
+
+  await Promise.all(
+    sourceFiles.map(async (file) => {
       const sourceFile = path.join(sourceDir, file);
       const targetFile = path.join(targetDir, file);
       await fs.copyFile(sourceFile, targetFile);
